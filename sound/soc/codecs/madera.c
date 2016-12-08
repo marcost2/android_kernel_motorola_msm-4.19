@@ -3217,10 +3217,17 @@ static int madera_hw_params_rate(struct snd_pcm_substream *substream,
 	int i, sr_val;
 	unsigned int reg, cur, tar;
 	int ret;
+	u32 rx_sampleszbits, rx_samplerate;
+
+	rx_sampleszbits = snd_pcm_format_width(params_format(params));
+	if (rx_sampleszbits < 16)
+		rx_sampleszbits = 16;
 
 	for (i = 0; i < ARRAY_SIZE(madera_sr_vals); i++)
-		if (madera_sr_vals[i] == params_rate(params))
+		if (madera_sr_vals[i] == params_rate(params)) {
+			rx_samplerate = params_rate(params);
 			break;
+		}
 
 	if (i == ARRAY_SIZE(madera_sr_vals)) {
 		madera_aif_err(dai, "Unsupported sample rate %dHz\n",
@@ -3228,6 +3235,20 @@ static int madera_hw_params_rate(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 	sr_val = i;
+
+	switch (dai->id) {
+	case 4: /* cs47l35-slim1 */
+		priv->rx1_sampleszbits = rx_sampleszbits;
+		priv->rx1_samplerate = rx_samplerate;
+		break;
+	case 5: /* cs47l35-slim2 */
+		priv->rx2_sampleszbits = rx_sampleszbits;
+		priv->rx2_samplerate = rx_samplerate;
+		break;
+	case 6:
+	default:
+		break;
+	}
 
 	switch (dai_priv->clk) {
 	case MADERA_CLK_SYSCLK_1:
