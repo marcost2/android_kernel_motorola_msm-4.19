@@ -351,6 +351,7 @@ extern const unsigned int madera_mixer_values[MADERA_NUM_MIXER_INPUTS];
 
 extern const struct snd_soc_dai_ops madera_dai_ops;
 extern const struct snd_soc_dai_ops madera_simple_dai_ops;
+extern const struct snd_soc_dai_ops madera_slim_dai_ops;
 
 extern const struct snd_kcontrol_new madera_inmux[];
 extern const struct snd_kcontrol_new madera_inmode[];
