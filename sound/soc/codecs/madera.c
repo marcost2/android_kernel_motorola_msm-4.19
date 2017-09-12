@@ -2487,8 +2487,9 @@ int madera_in_ev(struct snd_soc_dapm_widget *w, struct snd_kcontrol *kcontrol,
 		break;
 	case SND_SOC_DAPM_POST_PMU:
 		priv->in_pending--;
-		snd_soc_component_update_bits(component, reg,
-					      MADERA_IN1L_MUTE, 0);
+		msleep(30);
+		snd_soc_update_bits(codec, reg,
+						  MADERA_IN1L_MUTE, 0);
 
 		/* If this is the last input pending then allow VU */
 		if (priv->in_pending == 0) {
