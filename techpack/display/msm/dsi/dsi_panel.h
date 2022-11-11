@@ -85,6 +85,12 @@ enum dsi_backlight_type {
 	DSI_BACKLIGHT_MAX,
 };
 
+enum dsi_backlight_level_align_type {
+	DSI_BACKLIGHT_LEVEL_ALIGN_NORMAL = 0,
+	DSI_BACKLIGHT_LEVEL_ALIGN_BIT15_8_BIT3_0 = 1,
+};
+
+
 enum bl_update_flag {
 	BL_UPDATE_DELAY_UNTIL_FIRST_FRAME,
 	BL_UPDATE_NONE,
@@ -156,6 +162,7 @@ struct dsi_backlight_config {
 	u32 bl_level;
 	u32 bl_scale;
 	u32 bl_scale_sv;
+	u32 bl_level_align;
 	bool bl_inverted_dbv;
 
 	int en_gpio;
@@ -184,11 +191,13 @@ struct dsi_panel_reset_config {
 	int lcd_mode_sel_gpio;
 	int tp_rst_gpio;
 	u32 tp_rst_post_sleep;
+	u32 panel_rst_due_tp_rst_sleep;
 	u32 mode_sel_state;
 
 	bool panel_on_rst_pull_down;
 	bool panel_on_tp_rst_enable;
 	bool reset_force_pull_low;
+	bool panel_rst_due_tp_rst;
 };
 
 enum esd_check_status_mode {
