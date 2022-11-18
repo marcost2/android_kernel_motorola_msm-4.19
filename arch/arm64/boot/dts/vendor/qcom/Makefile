@@ -79,6 +79,10 @@ dtbo-$(CONFIG_CAPRIP_DTB) += \
 bengal-caprip-evt-overlay.dtbo-base := bengal-moto-base.dtb
 bengal-caprip-dvt2-overlay.dtbo-base := bengal-moto-base.dtb
 
+# Moto SDM660
+dtb-$(CONFIG_BECKHAM_DTB) += \
+        sdm636-beckham-pvt.dtb
+
 else
 ifeq ($(CONFIG_BUILD_ARM64_DT_OVERLAY),y)
         dtbo-$(CONFIG_ARCH_KONA) += \
