@@ -22,6 +22,7 @@
 #include "dsi-panel-mot-smd-601-1080p-cmd.dtsi"
 #include "dsi-panel-mot-tianma-601-1080p-cmd.dtsi"
 #include "carrier-channel-ids.dtsi"
+#include <dt-bindings/moto/moto-mem-reserve.h>
 
 / {
         model = "beckham";
@@ -49,10 +50,14 @@
 	};
 
 	reserved-memory {
-		ramoops_mem: ramoops_mem_region {
+		ramoops {
+			compatible = "removed-dma-pool", "ramoops";
 			no-map;
-			reg = <0x0 0xaf000000 0x0 0xC0000>;
-			label = "ramoops_mem";
+			status = "ok";
+			reg = <0x0 RAMOOPS_BASE_ADDR 0x0 RAMOOPS_SIZE>;
+			console-size = <RAMOOPS_CONSOLE_SIZE>;
+			pmsg-size = <RAMOOPS_PMSG_SIZE>;
+			record-size = <RAMOOPS_RECORD_SIZE>;
 		};
 	};
 };
@@ -99,8 +104,6 @@
 	oled_disp-supply = <&pm660a_oledb>;
 	qcom,platform-reset-gpio = <&tlmm 53 0>;
 	qcom,platform-te-gpio = <&tlmm 59 0>;
-
-	/delete-property/  qcom,mdss-fb-map;
 };
 
 &mdss_dsi1 {
@@ -244,18 +247,6 @@
 			polling-delay-passive = <100>; /* milliseconds */
 			thermal-sensors = <&rradc_typec_temp>;
 		};
-	};
-
-	ramoops {
-		compatible = "ramoops";
-		status = "ok";
-
-		console-size = <0x0 0x40000>;
-		record-size = <0x0 0x3f800>;
-		ramoops-annotate-size = <0x0 0x800>;
-		pmsg-size = <0x0 0x40000>;
-
-		memory-region = <&ramoops_mem>;
 	};
 
 	qcom,tz_gpio {
