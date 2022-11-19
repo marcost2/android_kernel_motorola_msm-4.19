@@ -26,19 +26,11 @@
 #include <linux/slab.h>
 #include <linux/types.h>
 #include <linux/fs.h>
-#include <linux/semaphore.h>
 #include <linux/device.h>
-#include <linux/syscalls.h>
-#include <linux/uaccess.h>
 #include <linux/gpio.h>
-#include <linux/sched.h>
-#include <linux/spinlock_types.h>
-#include <linux/spinlock.h>
 #include <linux/delay.h>
 #include <linux/jiffies.h>
 #include <linux/err.h>
-#include <linux/clk.h>
-#include <linux/firmware.h>
 #include <linux/miscdevice.h>
 #include <linux/interrupt.h>
 #include <linux/of.h>
@@ -46,7 +38,9 @@
 #include <linux/export.h>
 #include <linux/bitops.h>
 #include <linux/pcal6416.h>
+
 #include "gpiolib.h"
+
 static struct regmap_config pcal6416_i2c_regmap = {
 	.reg_bits = 8,
 	.val_bits = 8,
@@ -120,9 +114,9 @@ static int pcal6416_reg_write_one_io(struct pcal6416_data *data,
 	return pcal6416_reg_write(data, reg, reg_val);
 }
 
-static int pcal6416_pin_get(struct gpio_chip *gc, unsigned offset)
+static int pcal6416_pin_get(struct gpio_chip *gpio_chip, unsigned offset)
 {
-        struct pcal6416_data *data = gpiochip_get_data(gc);
+	struct pcal6416_data *data = dev_get_drvdata(gpio_chip->parent);
 	int val;
 
 	if (data->all_gpio_config[offset] == GPIO_IN)
@@ -133,20 +127,20 @@ static int pcal6416_pin_get(struct gpio_chip *gc, unsigned offset)
 	return val;
 }
 
-static void pcal6416_pin_set(struct gpio_chip *gc,
+static void pcal6416_pin_set(struct gpio_chip *gpio_chip,
 		unsigned offset, int value)
 {
-	struct pcal6416_data *data = gpiochip_get_data(gc);
+	struct pcal6416_data *data = dev_get_drvdata(gpio_chip->parent);
 
 	pcal6416_reg_write_one_io(data, PCAL6416_REG_OUTPUT_VAL, offset, value);
 }
 
-static int pcal6416_pin_direction_input(struct gpio_chip *gc,
+static int pcal6416_pin_direction_input(struct gpio_chip *gpio_chip,
 		unsigned offset)
 {
 	int rc = 0;
 
-	struct pcal6416_data *data = gpiochip_get_data(gc);
+	struct pcal6416_data *data = dev_get_drvdata(gpio_chip->parent);
 
 	rc = pcal6416_reg_write_one_io(data, PCAL6416_REG_CONFIG, offset, GPIO_IN);
 
@@ -156,16 +150,16 @@ static int pcal6416_pin_direction_input(struct gpio_chip *gc,
 	return rc;
 }
 
-static int pcal6416_pin_direction_output(struct gpio_chip *gc,
+static int pcal6416_pin_direction_output(struct gpio_chip *gpio_chip,
 		unsigned offset,
 		int val)
 {
 	int rc = 0;
 
-	struct pcal6416_data *data = gpiochip_get_data(gc);
+	struct pcal6416_data *data = dev_get_drvdata(gpio_chip->parent);
 
 	if (val >= 0)
-		pcal6416_pin_set(gc, offset, val);
+		pcal6416_pin_set(gpio_chip, offset, val);
 
 	rc = pcal6416_reg_write_one_io(data, PCAL6416_REG_CONFIG, offset, GPIO_OUT);
 	if (!rc)
@@ -174,7 +168,7 @@ static int pcal6416_pin_direction_output(struct gpio_chip *gc,
 	return rc;
 }
 
-static int pcal6416_pin_of_gpio_xlate(struct gpio_chip *gc,
+static int pcal6416_pin_of_gpio_xlate(struct gpio_chip *gpio_chip,
 				   const struct of_phandle_args *gpio_spec,
 				   u32 *flags)
 {
@@ -234,6 +228,8 @@ static int pcal6416_of_init(struct i2c_client *client, struct pcal6416_data *dat
 			udelay(1);
 			gpio_direction_output(data->reset_gpio, 1);
 			udelay(1);
+			
+			gpio_export(data->reset_gpio, true);
 		} else if (rc == -EBUSY) {
 			struct gpio_desc *gpio_desc = gpio_to_desc(data->reset_gpio);
 			if (gpio_desc != NULL && gpio_desc->label != NULL &&
