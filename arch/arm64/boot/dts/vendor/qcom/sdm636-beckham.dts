@@ -424,9 +424,9 @@
 		gpios = <&tlmm 67 0>, /* IRQ */
 			<&tlmm 66 0>; /* RESET */
 		synaptics,gpio-config;
-		pinctrl-names = "pmx_ts_active","pmx_ts_suspend";
-		pinctrl-0 = <&ts_int_active &ts_reset_active>;
-		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+		pinctrl-names = "default", "active";
+		pinctrl-0 = <&touch_reset_suspend &touch_int_suspend>;
+		pinctrl-1 = <&touch_reset_active &touch_int_active>;
 		config_modifier-names = "aod";
 		config_modifier-aod {
 			aod-suspended {
