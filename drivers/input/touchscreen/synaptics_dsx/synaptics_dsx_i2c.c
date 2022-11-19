@@ -465,59 +465,6 @@ exit:
 	return retval;
 }
 
-static int check_dt(struct device_node *np)
-{
-	int i;
-	int count;
-	struct device_node *node;
-	struct drm_panel *panel;
-
-	count = of_count_phandle_with_args(np, "panel", NULL);
-	if (count <= 0)
-		return 0;
-
-	for (i = 0; i < count; i++) {
-		node = of_parse_phandle(np, "panel", i);
-		panel = of_drm_find_panel(node);
-		of_node_put(node);
-		if (!IS_ERR(panel)) {
-			active_panel = panel;
-			return 0;
-		}
-	}
-
-	return -ENODEV;
-}
-
-static int check_default_tp(struct device_node *dt, const char *prop)
-{
-	const char *active_tp;
-	const char *compatible;
-	char *start;
-	int ret;
-
-	ret = of_property_read_string(dt->parent, prop, &active_tp);
-	if (ret) {
-		pr_err(" %s:fail to read %s %d\n", __func__, prop, ret);
-		return -ENODEV;
-	}
-
-	ret = of_property_read_string(dt, "compatible", &compatible);
-	if (ret < 0) {
-		pr_err(" %s:fail to read %s %d\n", __func__, "compatible", ret);
-		return -ENODEV;
-	}
-
-	start = strnstr(active_tp, compatible, strlen(active_tp));
-	if (start == NULL) {
-		pr_err(" %s:no match compatible, %s, %s\n",
-			__func__, compatible, active_tp);
-		ret = -ENODEV;
-	}
-
-	return ret;
-}
-
 #if defined(CONFIG_SECURE_TOUCH_SYNAPTICS_DSX)
 static int synaptics_rmi4_clk_prepare_enable(
 		struct synaptics_rmi4_data *rmi4_data)
@@ -596,17 +543,6 @@ static int synaptics_rmi4_i2c_probe(struct i2c_client *client,
 		const struct i2c_device_id *dev_id)
 {
 	int retval;
-	struct device_node *dp = client->dev.of_node;
-
-	if (check_dt(dp)) {
-		if (!check_default_tp(dp, "qcom,i2c-touch-active"))
-			retval = -EPROBE_DEFER;
-		else
-			retval = -ENODEV;
-
-		return retval;
-	}
-
 	if (!i2c_check_functionality(client->adapter,
 			I2C_FUNC_SMBUS_BYTE_DATA)) {
 		dev_err(&client->dev,

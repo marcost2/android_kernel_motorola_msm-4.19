@@ -56,6 +56,7 @@ enum subsystem {
 #define TZ_BLSP_MODIFY_OWNERSHIP_ID 3
 #endif
 
+#include <linux/msm_drm_notify.h>
 #include <linux/completion.h>
 
 #define INPUT_PHYS_NAME "synaptics_dsx/touch_input"
@@ -138,7 +139,7 @@ static int synaptics_rmi4_reset_device(struct synaptics_rmi4_data *rmi4_data,
 		bool rebuild);
 static int synaptics_rmi4_dsi_panel_notifier_cb(struct notifier_block *self,
 		unsigned long event, void *data);
-struct drm_panel *active_panel;
+
 #ifdef CONFIG_HAS_EARLYSUSPEND
 #ifndef CONFIG_FB
 #define USE_EARLYSUSPEND
@@ -4614,15 +4615,12 @@ static int synaptics_rmi4_probe(struct platform_device *pdev)
 	rmi4_data->initialized = false;
 	rmi4_data->fb_notifier.notifier_call =
 					synaptics_rmi4_dsi_panel_notifier_cb;
-	if (active_panel) {
-		retval = drm_panel_notifier_register(active_panel,
-				&rmi4_data->fb_notifier);
-		if (retval < 0) {
-			dev_err(&pdev->dev,
-					"%s: Failed to register fb notifier client\n",
-					__func__);
-			goto err_drm_reg;
-		}
+	retval = msm_drm_register_client(&rmi4_data->fb_notifier);
+	if (retval < 0) {
+		dev_err(&pdev->dev,
+				"%s: Failed to register fb notifier client\n",
+				__func__);
+		goto err_drm_reg;
 	}
 
 	/* Initialize secure touch */
@@ -4643,9 +4641,7 @@ static int synaptics_rmi4_probe(struct platform_device *pdev)
 	return retval;
 
 err_probe_wq:
-	if (active_panel)
-		drm_panel_notifier_unregister(active_panel,
-				&rmi4_data->fb_notifier);
+	msm_drm_unregister_client(&rmi4_data->fb_notifier);
 
 err_drm_reg:
 	kfree(rmi4_data);
@@ -4701,21 +4697,21 @@ static void synaptics_rmi4_defer_probe(struct work_struct *work)
 	}
 
 	retval = synaptics_dsx_pinctrl_init(rmi4_data);
-	if (!retval && rmi4_data->ts_pinctrl) {
-		/*
-		 * Pinctrl handle is optional.
-		 * If pinctrl handle is found let pins to be
-		 * configured in active state. If not found continue
-		 * further without error.
-		 */
-		retval = pinctrl_select_state(rmi4_data->ts_pinctrl,
-				rmi4_data->pinctrl_state_active);
-		if (retval < 0) {
-			dev_err(&pdev->dev,
-				"%s: Failed to select %s pinstate %d\n",
-				__func__, PINCTRL_STATE_ACTIVE, retval);
+		if (!retval && rmi4_data->ts_pinctrl) {
+			/*
+			 * Pinctrl handle is optional.
+			 * If pinctrl handle is found let pins to be
+			 * configured in active state. If not found continue
+			 * further without error.
+			 */
+			retval = pinctrl_select_state(rmi4_data->ts_pinctrl,
+					rmi4_data->pinctrl_state_active);
+			if (retval < 0) {
+				dev_err(&pdev->dev,
+					"%s: Failed to select %s pinstate %d\n",
+					__func__, PINCTRL_STATE_ACTIVE, retval);
+			}
 		}
-	}
 
 	if (hw_if->ui_hw_init) {
 		retval = hw_if->ui_hw_init(rmi4_data);
@@ -4877,9 +4873,7 @@ err_enable_reg:
 
 err_get_reg:
 err_drm_init_wait:
-	if (active_panel)
-		drm_panel_notifier_unregister(active_panel,
-				&rmi4_data->fb_notifier);
+	msm_drm_unregister_client(&rmi4_data->fb_notifier);
 	cancel_work_sync(&rmi4_data->rmi4_probe_work);
 	destroy_workqueue(rmi4_data->rmi4_probe_wq);
 	kfree(rmi4_data);
@@ -4919,9 +4913,7 @@ static int synaptics_rmi4_remove(struct platform_device *pdev)
 
 	synaptics_rmi4_irq_enable(rmi4_data, false, false);
 
-	if (active_panel)
-		drm_panel_notifier_unregister(active_panel,
-				&rmi4_data->fb_notifier);
+	msm_drm_unregister_client(&rmi4_data->fb_notifier);
 
 #ifdef USE_EARLYSUSPEND
 	unregister_early_suspend(&rmi4_data->early_suspend);
@@ -4969,19 +4961,19 @@ static int synaptics_rmi4_dsi_panel_notifier_cb(struct notifier_block *self,
 		unsigned long event, void *data)
 {
 	int transition;
-	struct drm_panel_notifier *evdata = data;
+	struct msm_drm_notifier *evdata = data;
 	struct synaptics_rmi4_data *rmi4_data =
 			container_of(self, struct synaptics_rmi4_data,
 			fb_notifier);
 
-	if (!evdata)
+	if (!evdata || (evdata->id != 0))
 		return 0;
 
 	if (evdata && evdata->data && rmi4_data) {
-		if (event == DRM_PANEL_EARLY_EVENT_BLANK) {
+		if (event == MSM_DRM_EARLY_EVENT_BLANK) {
 			synaptics_rmi4_secure_touch_stop(rmi4_data, false);
 			transition = *(int *)evdata->data;
-			if (transition == DRM_PANEL_BLANK_POWERDOWN) {
+			if (transition == MSM_DRM_BLANK_POWERDOWN) {
 				if (rmi4_data->initialized)
 					synaptics_rmi4_suspend(
 							&rmi4_data->pdev->dev);
@@ -4991,9 +4983,9 @@ static int synaptics_rmi4_dsi_panel_notifier_cb(struct notifier_block *self,
 	}
 
 	if (evdata && evdata->data && rmi4_data) {
-		if (event == DRM_PANEL_EVENT_BLANK) {
+		if (event == MSM_DRM_EVENT_BLANK) {
 			transition = *(int *)evdata->data;
-			if (transition == DRM_PANEL_BLANK_UNBLANK) {
+			if (transition == MSM_DRM_BLANK_UNBLANK) {
 				if (rmi4_data->initialized)
 					synaptics_rmi4_resume(
 							&rmi4_data->pdev->dev);
