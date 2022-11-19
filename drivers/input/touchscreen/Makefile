@@ -121,3 +121,5 @@ obj-$(CONFIG_TOUCHSCREEN_ILITEK_CHIPSET) 	+= ili9882_mmi/
 obj-$(CONFIG_INPUT_HIMAX_V3_MMI)	+= himax_v3_mmi/
 obj-$(CONFIG_TOUCHSCREEN_CHIPONE_TDDI)	+= chipone_tddi_mmi/
 obj-$(CONFIG_TOUCHSCREEN_FTS_0FLASH_MMI) += focaltech_0flash_mmi/
+obj-$(CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_MMI) += synaptics_mmi/
+

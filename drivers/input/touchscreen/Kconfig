@@ -1378,5 +1378,7 @@ source "drivers/input/touchscreen/chipone_tddi_mmi/Kconfig"
 
 source "drivers/input/touchscreen/focaltech_0flash_mmi/Kconfig"
 
+source "drivers/input/touchscreen/synaptics_mmi/Kconfig"
+
 endif
 
