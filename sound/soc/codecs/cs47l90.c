@@ -2410,7 +2410,7 @@ static irqreturn_t cs47l90_dsp_bus_error(int irq, void *data)
 {
 	struct wm_adsp *dsp = (struct wm_adsp *)data;
 
-	return wm_adsp2_bus_error(dsp);
+	return wm_adsp2_bus_error(irq, dsp);
 }
 
 static int cs47l90_component_probe(struct snd_soc_component *component)
@@ -2529,6 +2529,7 @@ static int cs47l90_probe(struct platform_device *pdev)
 
 	ret = madera_core_init(&cs47l90->core);
 	if (ret)
+		dev_err(&pdev->dev, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 		return ret;
 
 	ret = madera_request_irq(madera, MADERA_IRQ_DSP_IRQ1,
@@ -2572,6 +2573,7 @@ static int cs47l90_probe(struct platform_device *pdev)
 				madera_free_bus_error_irq(&cs47l90->core, i);
 				wm_adsp2_remove(&cs47l90->core.adsp[i]);
 			}
+			dev_err(&pdev->dev, "AAAAAAAAAAAA");
 			goto error_dsp_irq;
 		}
 	}
@@ -2594,6 +2596,7 @@ static int cs47l90_probe(struct platform_device *pdev)
 	pm_runtime_enable(&pdev->dev);
 	pm_runtime_idle(&pdev->dev);
 
+	dev_err(&pdev->dev, "AAAAAAAAAAAA");
 	ret = devm_snd_soc_register_component(&pdev->dev,
 					      &soc_component_dev_cs47l90,
 					      cs47l90_dai,

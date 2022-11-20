@@ -269,7 +269,7 @@ config SND_SOC_WM_HUBS
 	default m if SND_SOC_WM8993=m || SND_SOC_WM8994=m
 
 config SND_SOC_WM_ADSP
-	tristate
+	tristate " WM ADSP"
 	select SND_SOC_COMPRESS
 	default y if SND_SOC_CS47L24=y
 	default y if SND_SOC_WM5102=y
@@ -554,7 +554,7 @@ config SND_SOC_CS47L24
 	tristate
 
 config SND_SOC_CS47L90
-	tristate
+	tristate " Cirrus Logic CS47L90 Codec"
 
 # Cirrus Logic Quad-Channel ADC
 config SND_SOC_CS53L30
@@ -646,7 +646,7 @@ config SND_SOC_LM49453
 	tristate
 
 config SND_SOC_MADERA
-	tristate
+	tristate "Cirrus Madera"
 	default y if SND_SOC_CS47L90=y
 	default m if SND_SOC_CS47L90=m
 
