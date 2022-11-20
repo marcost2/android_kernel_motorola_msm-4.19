@@ -13,10 +13,6 @@
 &tlmm {
 	/delete-node/ mdss_dp_usbplug_cc_active;
 	/delete-node/ mdss_dp_usbplug_cc_suspend;
-	/delete-node/ cs35l35_reset_default;
-	/delete-node/ cs35l35_irq_default;
-	/delete-node/ marley_irq_default;
-	/delete-node/ marley_reset_default;
 
 	cs35l36_irq_default: cs35l36_irq_default {
 		config {
@@ -136,10 +132,119 @@
 &soc {
 	/delete-node/ audio_ext_clk;
 
+	qcom,msm-dai-mi2s {
+		compatible = "qcom,msm-dai-mi2s";
+		dai_mi2s0: qcom,msm-dai-q6-mi2s-prim {
+			status = "disabled";
+		};
+
+		dai_mi2s1: qcom,msm-dai-q6-mi2s-sec {
+			status = "disabled";
+		};
+
+		dai_mi2s2: qcom,msm-dai-q6-mi2s-tert {
+			status = "disabled";
+		};
+
+		dai_mi2s3: qcom,msm-dai-q6-mi2s-quat {
+			status = "disabled";
+		};
+
+		dai_mi2s5: qcom,msm-dai-q6-mi2s-quin {
+			status = "disabled";
+		};
+
+		dai_mi2s6: qcom,msm-dai-q6-mi2s-senary {
+			status = "disabled";
+		};
+
+		dai_int_mi2s0: qcom,msm-dai-q6-int-mi2s0 {
+			status = "disabled";
+		};
+
+		dai_int_mi2s1: qcom,msm-dai-q6-int-mi2s1 {
+			status = "disabled";
+		};
+
+		dai_int_mi2s2: qcom,msm-dai-q6-int-mi2s2 {
+			status = "disabled";
+		};
+
+		dai_int_mi2s3: qcom,msm-dai-q6-int-mi2s3 {
+			status = "disabled";
+		};
+
+		dai_int_mi2s4: qcom,msm-dai-q6-int-mi2s4 {
+			status = "disabled";
+		};
+
+		dai_int_mi2s5: qcom,msm-dai-q6-int-mi2s5 {
+			status = "disabled";
+		};
+
+		dai_int_mi2s6: qcom,msm-dai-q6-int-mi2s6 {
+			status = "disabled";
+		};
+	};
+
+	qcom,msm-dai-tdm-pri-rx {
+		status = "disabled";
+	};
+
+	qcom,msm-dai-tdm-pri-tx {
+		status = "disabled";
+	};
+
+	qcom,msm-dai-tdm-sec-rx {
+		status = "disabled";
+	};
+
+	qcom,msm-dai-tdm-sec-tx {
+		status = "disabled";
+	};
+
+	qcom,msm-dai-tdm-tert-rx {
+		status = "disabled";
+	};
+
+	qcom,msm-dai-tdm-tert-tx {
+		status = "disabled";
+	};
+
+	qcom,msm-dai-tdm-quat-rx {
+		status = "disabled";
+	};
+
+	qcom,msm-dai-tdm-quat-tx {
+		status = "disabled";
+	};
+
+	ospl {
+		compatible = "mmi,ospl2xx";
+		status = "ok";
+		mmi,ospl-afe-port-id = <16384 16387>;
+		mmi,ospl-left-feedback;
+		mmi,ospl-passive-f0;
+	};
+
+	dummy_vreg: dummy_vreg {
+		compatible = "regulator-fixed";
+		status = "ok";
+		regulator-name = "dummy_vreg";
+		regulator-always-on;
+	};
+	/delete-node/ qcom,wcd-dsp-mgr;
+	/delete-node/ qcom,wcd-dsp-glink;
+	/delete-node/ sound-9335;
+	/delete-node/ sound-tavil;
+
 	sound-madera {
-		/delete-property/ asoc-platform;
-		/delete-property/ asoc-platform-names;
-		/delete-property/ qcom,audio-routing;
+		status = "ok";
+		compatible = "qcom,sdm660-asoc-snd-madera";
+		qcom,model = "sdm660-madera-snd-card";
+		qcom,msm-mclk-freq = <9600000>;
+		qcom,ext-disp-audio-rx;
+		qcom,wcn-btfm;
 		qcom,hdmi-dba-codec-rx;
 		qcom,msm-mi2s-master = <1>, <1>, <1>, <1>;
 
@@ -187,6 +292,9 @@
 				"msm-dai-q6-tdm.36880", "msm-dai-q6-tdm.36881",
 				"msm-dai-q6-tdm.36896", "msm-dai-q6-tdm.36897",
 				"msm-dai-q6-tdm.36912", "msm-dai-q6-tdm.36913";
+		asoc-codec = <&stub_codec>, <&ext_disp_audio_codec>;
+		asoc-codec-names = "msm-stub-codec.1",
+				"msm-ext-disp-audio-codec-rx";
 		qcom,audio-routing =
 			"IN2AL", "MICBIAS2A",
 			"IN1AL", "MICBIAS2B",
@@ -222,8 +330,6 @@
 };
 
 &slim_aud {
-	/delete-node/ tasha_codec;
-	/delete-node/ tavil_codec;
 	madera-codec {
 		compatible = "cirrus,madera-slim-audio";
 		elemental-addr = [00 00 64 63 FA 01];
@@ -231,7 +337,7 @@
 };
 
 &i2c_2 {
-	/delete-node/ cs35l35@40;
+	status = "ok";
 	cs35l36@40 {
 		status = "ok";
 		compatible = "cirrus,cs35l36";
@@ -270,8 +376,12 @@
 	};
 };
 
+&pm660_l14 {
+	regulator-always-on;
+};
+
 &spi_7 {
-	/delete-node/ cs47l35@0;
+	status = "ok";
 	cs47l90: cs47l90@0 {
 		compatible = "cirrus,cs47l90";
 		spi-max-frequency = <26000000>;
