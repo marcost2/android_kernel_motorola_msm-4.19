@@ -14,7 +14,7 @@ if TOUCHSCREEN_SYNAPTICS_DSX_MMI
 
 config TOUCHSCREEN_SYNAPTICS_DSX_MMI_CORE
 	tristate "Synaptics DSX core driver module"
-	depends on I2C && INPUT_TOUCHSCREEN_MMI
+	depends on I2C
 	select PANEL_NOTIFICATIONS
 	default n
 	help

@@ -67,6 +67,14 @@ config CAPRIP_DTB
       Only include Caprip specific DTBs to limit the number that
       get built during kernel compilation
 
+config BECKHAM_DTB
+    depends on ARCH_QCOM
+    default n
+    bool "Beckham DTBs"
+    help
+      Only include Beckham specific DTBs to limit the number that
+      get built during kernel compilation
+
 config QCOM_COMMAND_DB
 	tristate "Qualcomm Command DB"
 	depends on ARCH_QCOM || COMPILE_TEST

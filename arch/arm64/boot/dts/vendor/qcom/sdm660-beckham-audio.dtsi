@@ -131,7 +131,6 @@
 
 &soc {
 	/delete-node/ audio_ext_clk;
-
 	qcom,msm-dai-mi2s {
 		compatible = "qcom,msm-dai-mi2s";
 		dai_mi2s0: qcom,msm-dai-q6-mi2s-prim {
@@ -296,12 +295,12 @@
 		asoc-codec-names = "msm-stub-codec.1",
 				"msm-ext-disp-audio-codec-rx";
 		qcom,audio-routing =
-			"IN2AL", "MICBIAS2A",
-			"IN1AL", "MICBIAS2B",
-			"IN2R",  "MICBIAS2C",
-			"IN1AR", "MICBIAS2D",
-			"IN1BR", "MICBIAS1A",
-			"IN1BR", "MICBIAS1B";
+			"IN2ALN", "MICBIAS2A",
+			"IN1ALN", "MICBIAS2B",
+			"IN2RN",  "MICBIAS2C",
+			"IN1ARN", "MICBIAS2D",
+			"IN1BRN", "MICBIAS1A",
+			"IN1BRN", "MICBIAS1B";
 	};
 
 	mods_codec_shim {
@@ -322,14 +321,16 @@
 		};
 	};
 
-	msm_ext_disp: qcom,msm_ext_disp {
-		ext_disp_audio_codec: qcom,msm-ext-disp-audio-codec-rx {
+	qcom,msm_ext_disp {
+		qcom,msm-ext-disp-audio-codec-rx {
 			qcom,beckham_ext_disp;
 		};
 	};
 };
 
 &slim_aud {
+	/delete-node/ tasha_codec;
+	/delete-node/ tavil_codec;
 	madera-codec {
 		compatible = "cirrus,madera-slim-audio";
 		elemental-addr = [00 00 64 63 FA 01];
@@ -519,4 +520,8 @@
 
 	gpio-labels = "gpio_usb_aud_det_n",
 		"gpio_aud_sw_sel";
+};
+
+&q6core {
+	/delete-node/ sound-tavil;
 };

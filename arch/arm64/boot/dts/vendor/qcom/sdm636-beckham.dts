@@ -19,6 +19,7 @@
 #include "sdm660-beckham-pinctrl.dtsi"
 #include "sdm660-moto-pinctrl.dtsi"
 #include "sdm660-moto-fps.dtsi"
+#include "sdm660-beckham-audio.dtsi"
 #include "dsi-panel-mot-smd-601-1080p-cmd.dtsi"
 #include "dsi-panel-mot-tianma-601-1080p-cmd.dtsi"
 #include "carrier-channel-ids.dtsi"

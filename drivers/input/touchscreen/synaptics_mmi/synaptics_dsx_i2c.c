@@ -8178,12 +8178,24 @@ static const struct i2c_device_id synaptics_rmi4_id_table[] = {
 };
 MODULE_DEVICE_TABLE(i2c, synaptics_rmi4_id_table);
 
+#if defined(CONFIG_OF)
+static const struct of_device_id synaptics_of_match[] = {
+        {.compatible = "synaptics,synaptics_dsx_i2c"},
+        {},
+};
+
+MODULE_DEVICE_TABLE(of, synaptics_of_match);
+#endif
+
 static struct i2c_driver synaptics_rmi4_driver = {
 	.driver = {
 		.name = DRIVER_NAME,
 		.owner = THIS_MODULE,
 #if !defined(CONFIG_FB) && defined(CONFIG_PM)
 		.pm = &synaptics_rmi4_dev_pm_ops,
+#endif
+#if defined(CONFIG_OF)
+		.of_match_table = of_match_ptr(synaptics_of_match),
 #endif
 	},
 	.probe = synaptics_rmi4_probe,

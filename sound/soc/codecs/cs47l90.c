@@ -27,6 +27,7 @@
 #include <linux/irqchip/irq-madera.h>
 #include <linux/mfd/madera/core.h>
 #include <linux/mfd/madera/registers.h>
+#include <linux/slimbus/slimbus.h>
 
 #include "madera.h"
 #include "wm_adsp.h"
@@ -2527,10 +2528,7 @@ static int cs47l90_probe(struct platform_device *pdev)
 	cs47l90->core.dev = &pdev->dev;
 	cs47l90->core.num_inputs = 10;
 
-	ret = madera_core_init(&cs47l90->core);
-	if (ret)
-		dev_err(&pdev->dev, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-		return ret;
+	madera_core_init(&cs47l90->core);
 
 	ret = madera_request_irq(madera, MADERA_IRQ_DSP_IRQ1,
 				 "ADSP2 Compressed IRQ", cs47l90_adsp2_irq,

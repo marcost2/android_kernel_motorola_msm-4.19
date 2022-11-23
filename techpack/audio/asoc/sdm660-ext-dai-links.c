@@ -26,12 +26,10 @@
 
 static struct snd_soc_card snd_soc_card_msm_card_tavil = {
 	.name = "sdm670-tavil-snd-card",
-	.late_probe = msm_snd_card_tavil_late_probe,
 };
 
 static struct snd_soc_card snd_soc_card_msm_card_tasha = {
 	.name = "sdm670-tasha-snd-card",
-	.late_probe = msm_snd_card_tasha_late_probe,
 };
 
 static struct snd_soc_ops msm_ext_slimbus_be_ops = {

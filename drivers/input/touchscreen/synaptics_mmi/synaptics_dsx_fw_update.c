@@ -4231,8 +4231,6 @@ static int synaptics_rmi4_fwu_init(struct synaptics_rmi4_data *rmi4_data)
 	fwu->force_update = FORCE_UPDATE;
 	fwu->do_lockdown = DO_LOCKDOWN;
 
-	wakeup_source_init(&fwu->flash_wake_src, "synaptics_fw_flash");
-
 	fwu->initialized = true;
 
 #ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_FW_UPDATE_EXTRA_SYSFS_MMI
@@ -4293,8 +4291,6 @@ static void synaptics_rmi4_fwu_remove(struct synaptics_rmi4_data *rmi4_data)
 
 	if (!fwu)
 		goto exit;
-
-	wakeup_source_trash(&fwu->flash_wake_src);
 
 	for (attr_count = 0; attr_count < ARRAY_SIZE(attrs); attr_count++) {
 		sysfs_remove_file(SYSFS_KOBJ, &attrs[attr_count].attr);

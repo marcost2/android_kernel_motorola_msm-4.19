@@ -15,6 +15,7 @@
 
 #include "wm_adsp.h"
 
+#define MADERA_SLIMBUS_MAX_CHANNELS 8
 #define MADERA_FLL1_REFCLK		1
 #define MADERA_FLL2_REFCLK		2
 #define MADERA_FLL3_REFCLK		3
@@ -141,6 +142,20 @@ struct madera_priv {
 	int tdm_slots[MADERA_MAX_AIF];
 
 	int domain_group_ref[MADERA_N_DOM_GRPS];
+
+	u32 rx_port_handle[MADERA_SLIMBUS_MAX_CHANNELS];
+	u32 tx_port_handle[MADERA_SLIMBUS_MAX_CHANNELS];
+	u16 rx_channel_handle[MADERA_SLIMBUS_MAX_CHANNELS];
+	u16 tx_channel_handle[MADERA_SLIMBUS_MAX_CHANNELS];
+	u16 rx_chan_map_slot[3][MADERA_SLIMBUS_MAX_CHANNELS];
+	u16 tx_chan_map_slot[3][MADERA_SLIMBUS_MAX_CHANNELS];
+	int rx_chan_map_num[3];
+	int tx_chan_map_num[3];
+	u32 rx1_samplerate;
+	u32 rx1_sampleszbits;
+	u32 rx2_samplerate;
+	u32 rx2_sampleszbits;
+	u8 slim_logic_addr;
 };
 
 struct madera_fll_cfg {
@@ -449,4 +464,5 @@ madera_unregister_notifier(struct snd_soc_component *component,
 	return blocking_notifier_chain_unregister(&madera->notifier, nb);
 }
 
+extern const struct snd_soc_dai_ops madera_slim_dai_ops;
 #endif

@@ -72,7 +72,7 @@ static bool dload_mode_enabled;
 static void *emergency_dload_mode_addr;
 static bool scm_dload_supported;
 
-static bool force_warm_reboot;
+static bool force_warm_reboot = 1;
 
 /* interface for exporting attributes */
 struct reset_attribute {
@@ -481,7 +481,7 @@ __setup("sys_restart_mode=", set_sys_restart_mode);
 
 static void msm_restart_prepare(const char *cmd)
 {
-	bool need_warm_reset = false;
+	bool need_warm_reset = true;
 	/* Write download mode flags if we're panic'ing
 	 * Write download mode flags if restart_mode says so
 	 * Kill download mode if master-kill switch is set
@@ -527,7 +527,6 @@ static void msm_restart_prepare(const char *cmd)
 			 * force cold reboot here to avoid unexpected
 			 * warm boot from bootloader.
 			 */
-			qpnp_pon_system_pwr_off(PON_POWER_OFF_HARD_RESET);
 		} else if (!strncmp(cmd, "recovery", 8)) {
 			qpnp_pon_set_restart_reason(
 				PON_RESTART_REASON_RECOVERY);
