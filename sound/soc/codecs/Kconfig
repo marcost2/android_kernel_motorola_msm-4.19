@@ -650,6 +650,9 @@ config SND_SOC_MADERA
 	default y if SND_SOC_CS47L90=y
 	default m if SND_SOC_CS47L90=m
 
+config SND_SOC_MADERA_SLIMBUS
+	tristate "Cirrus Madera"
+
 config SND_SOC_MAX98088
        tristate
 
