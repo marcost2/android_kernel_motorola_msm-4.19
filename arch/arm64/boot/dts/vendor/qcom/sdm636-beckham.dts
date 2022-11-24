@@ -16,7 +16,7 @@
 #include "sdm636.dtsi"
 #include "msm-pm660a.dtsi"
 #include "sdm660-external-codec.dtsi"
-#include "sdm660-beckham-pinctrl.dtsi"
+#include "sdm636-beckham-pinctrl.dtsi"
 #include "sdm660-moto-pinctrl.dtsi"
 #include "sdm660-moto-fps.dtsi"
 #include "sdm636-beckham-audio.dtsi"
