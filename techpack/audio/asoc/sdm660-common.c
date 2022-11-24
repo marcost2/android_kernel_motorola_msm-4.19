@@ -385,9 +385,11 @@ static SOC_ENUM_SINGLE_EXT_DECL(tdm_rx_format, tdm_bit_format_text);
 static SOC_ENUM_SINGLE_EXT_DECL(tdm_rx_sample_rate, tdm_sample_rate_text);
 static SOC_ENUM_SINGLE_EXT_DECL(tdm_slot_num, tdm_slot_num_text);
 static SOC_ENUM_SINGLE_EXT_DECL(tdm_slot_width, tdm_slot_width_text);
+#ifndef CONFIG_SND_SOC
 static SOC_ENUM_SINGLE_EXT_DECL(qos_vote, qos_text);
 
 static int qos_vote_status;
+#endif
 
 static struct afe_clk_set mi2s_clk[MI2S_MAX] = {
 	{
@@ -1168,6 +1170,7 @@ static int proxy_rx_ch_put(struct snd_kcontrol *kcontrol,
 	return 1;
 }
 
+#ifdef CONFIG_SND_SOC_QCOM_TDM
 static int tdm_get_sample_rate(int value)
 {
 	int sample_rate = 0;
@@ -1465,6 +1468,7 @@ static int tdm_get_format_val(int format)
 	}
 	return value;
 }
+#endif
 
 static int mi2s_get_format(int value)
 {
@@ -1514,6 +1518,7 @@ static int mi2s_get_format_value(int format)
 	return value;
 }
 
+#ifdef CONFIG_SND_SOC_QCOM_TDM
 static int tdm_rx_format_get(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
@@ -1984,6 +1989,7 @@ static int tdm_tx_slot_mapping_put(struct snd_kcontrol *kcontrol,
 	}
 	return ret;
 }
+#endif
 
 static int aux_pcm_get_sample_rate(int value)
 {
@@ -2908,6 +2914,7 @@ static int ext_disp_rx_sample_rate_put(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
+#ifdef CONFIG_SND_SOC_QCOM_TDM
 static int msm_qos_ctl_get(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
@@ -2959,6 +2966,7 @@ static int msm_qos_ctl_put(struct snd_kcontrol *kcontrol,
 
 	return 0;
 }
+#endif
 
 const struct snd_kcontrol_new msm_common_snd_controls[] = {
 	SOC_ENUM_EXT("PROXY_RX Channels", proxy_rx_chs,
@@ -3094,6 +3102,7 @@ const struct snd_kcontrol_new msm_common_snd_controls[] = {
 	SOC_ENUM_EXT("Display Port RX SampleRate", ext_disp_rx_sample_rate,
 			ext_disp_rx_sample_rate_get,
 			ext_disp_rx_sample_rate_put),
+#ifdef CONFIG_SND_SOC_QCOM_TDM
 	SOC_ENUM_EXT("PRI_TDM_RX_0 SampleRate", tdm_rx_sample_rate,
 			tdm_rx_sample_rate_get,
 			tdm_rx_sample_rate_put),
@@ -3446,6 +3455,7 @@ const struct snd_kcontrol_new msm_common_snd_controls[] = {
 		tdm_tx_slot_mapping_get, tdm_tx_slot_mapping_put),
 	SOC_ENUM_EXT("MultiMedia5_RX QOS Vote", qos_vote, msm_qos_ctl_get,
 			msm_qos_ctl_put),
+#endif
 };
 
 /**
