@@ -216,17 +216,17 @@ static u32 mi2s_ebit_clk[MI2S_MAX] = {
 	Q6AFE_LPASS_CLK_ID_QUI_MI2S_EBIT
 };
 
+#ifndef CONFIG_SND_SOC_MADERA
 struct msm_wsa881x_dev_info {
 	struct device_node *of_node;
 	u32 index;
 };
 
-#ifndef CONFIG_SND_SOC_CS47L35
 static struct snd_soc_aux_dev *msm_aux_dev;
 static struct snd_soc_codec_conf *msm_codec_conf;
-#endif
 
 static bool msm_swap_gnd_mic(struct snd_soc_component *component, bool active);
+#endif
 
 static struct wcd_mbhc_config mbhc_cfg = {
 	.read_fw_bin = false,
@@ -4836,6 +4836,7 @@ void msm_tdm_snd_shutdown(struct snd_pcm_substream *substream)
 }
 EXPORT_SYMBOL(msm_tdm_snd_shutdown);
 
+#ifndef CONFIG_SND_SOC_MADERA
 /* Validate whether US EU switch is present or not */
 static int msm_prepare_us_euro(struct snd_soc_card *card)
 {
@@ -4976,6 +4977,7 @@ static bool msm_swap_gnd_mic(struct snd_soc_component *component, bool active)
 	}
 	return ret;
 }
+#endif
 
 static int msm_populate_dai_link_component_of_node(
 		struct msm_asoc_mach_data *pdata,
@@ -5088,7 +5090,7 @@ err:
 	return ret;
 }
 
-#ifndef CONFIG_SND_SOC_CS47L35
+#ifndef CONFIG_SND_SOC_MADERA
 static int msm_wsa881x_init(struct snd_soc_component *component)
 {
 	u8 spkleft_ports[WSA881X_MAX_SWR_PORTS] = {100, 101, 102, 106};
@@ -5387,7 +5389,9 @@ static int msm_asoc_machine_probe(struct platform_device *pdev)
 	const char *mclk = "qcom,msm-mclk-freq";
 	int ret = -EINVAL, id;
 	const struct of_device_id *match;
+#ifndef CONFIG_SND_SOC_MADERA
 	const char *usb_c_dt = "qcom,msm-mbhc-usbc-audio-supported";
+#endif
 
 	pdata = devm_kzalloc(&pdev->dev,
 			     sizeof(struct msm_asoc_mach_data),
@@ -5454,6 +5458,7 @@ static int msm_asoc_machine_probe(struct platform_device *pdev)
 					"qcom,quat-mi2s-gpios", 0);
 	pdata->mi2s_gpio_p[QUIN_MI2S] = of_parse_phandle(pdev->dev.of_node,
 					"qcom,quin-mi2s-gpios", 0);
+#ifndef CONFIG_SND_SOC_MADERA
 	/*
 	 * Parse US-Euro gpio info from DT. Report no error if us-euro
 	 * entry is not found in DT file as some targets do not support
@@ -5481,6 +5486,7 @@ static int msm_asoc_machine_probe(struct platform_device *pdev)
 		dev_dbg(&pdev->dev, "msm_prepare_us_euro failed (%d)\n",
 			ret);
 
+#endif
 	i2s_auxpcm_init(pdev);
 
 	ret = snd_soc_of_parse_audio_routing(card, "qcom,audio-routing");
@@ -5492,7 +5498,7 @@ static int msm_asoc_machine_probe(struct platform_device *pdev)
 		goto err;
 	}
 
-#ifndef CONFIG_SND_SOC_CS47L35
+#ifndef CONFIG_SND_SOC_MADERA
 	if (!of_property_read_bool(pdev->dev.of_node, "qcom,wsa-disable")) {
 		ret = msm_init_wsa_dev(pdev, card);
 		if (ret)
@@ -5519,8 +5525,10 @@ static int msm_asoc_machine_probe(struct platform_device *pdev)
 	if (pdata->snd_card_val != INT_SND_CARD)
 		msm_ext_register_audio_notifier(pdev);
 
+	dev_info(&pdev->dev, "%s: snd_soc_register_card sucessfully\n", __func__);
 	return 0;
 err:
+#ifndef CONFIG_SND_SOC_MADERA
 	if (pdata->us_euro_gpio > 0) {
 		dev_dbg(&pdev->dev, "%s free us_euro gpio %d\n",
 			__func__, pdata->us_euro_gpio);
@@ -5538,6 +5546,7 @@ err:
 		gpio_free(pdata->hph_en0_gpio);
 		pdata->hph_en0_gpio = 0;
 	}
+#endif
 	if (pdata->snd_card_val != INT_SND_CARD)
 		msm_ext_cdc_deinit(pdata);
 	devm_kfree(&pdev->dev, pdata);
@@ -5552,6 +5561,7 @@ static int msm_asoc_machine_remove(struct platform_device *pdev)
 	if (pdata->snd_card_val == INT_SND_CARD)
 		mutex_destroy(&pdata->cdc_int_mclk0_mutex);
 
+#ifndef CONFIG_SND_SOC_MADERA
 	if (gpio_is_valid(pdata->us_euro_gpio)) {
 		gpio_free(pdata->us_euro_gpio);
 		pdata->us_euro_gpio = 0;
@@ -5564,7 +5574,7 @@ static int msm_asoc_machine_remove(struct platform_device *pdev)
 		gpio_free(pdata->hph_en0_gpio);
 		pdata->hph_en0_gpio = 0;
 	}
-
+#endif
 	if (pdata->snd_card_val != INT_SND_CARD) {
 		audio_notifier_deregister("sdm660");
 		msm_ext_cdc_deinit(pdata);

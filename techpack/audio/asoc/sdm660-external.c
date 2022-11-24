@@ -61,7 +61,10 @@
 #define CS47L35_DSPCLK_RATE (FLL_RATE_CS47L35 / 2)
 
 static int msm_ext_spk_control = 1;
+#ifndef CONFIG_SND_SOC_MADERA
 static struct wcd_mbhc_config *wcd_mbhc_cfg_ptr;
+static void *def_ext_mbhc_cal(void);
+#endif
 
 struct msm_asoc_wcd93xx_codec {
 	void* (*get_afe_config_fn)(struct snd_soc_component *component,
@@ -73,8 +76,6 @@ static struct msm_asoc_wcd93xx_codec msm_codec_fn;
 static struct platform_device *spdev;
 
 static bool is_initial_boot;
-
-static void *def_ext_mbhc_cal(void);
 
 enum {
 	SLIM_RX_0 = 0,
@@ -624,6 +625,7 @@ static int msm_vi_feed_tx_ch_put(struct snd_kcontrol *kcontrol,
 	return 1;
 }
 
+#ifndef CONFIG_SND_SOC_MADERA
 static void *def_ext_mbhc_cal(void)
 {
 	void *wcd_mbhc_cal;
@@ -657,6 +659,7 @@ static void *def_ext_mbhc_cal(void)
 
 	return wcd_mbhc_cal;
 }
+#endif
 
 static inline int param_is_mask(int p)
 {
@@ -719,7 +722,7 @@ int msm_ext_enable_codec_mclk(struct snd_soc_component *component, int enable,
 	pr_debug("%s: enable = %d\n", __func__, enable);
 
 	if (!strcmp(dev_name(component->dev), "cs47l35-codec"))
-		return 0;
+		ret = 0;
 	if (!strcmp(dev_name(component->dev), "tasha_codec"))
 		ret = tasha_cdc_mclk_enable(component, enable, dapm);
 	else if (!strcmp(dev_name(component->dev), "tavil_codec"))
@@ -970,7 +973,7 @@ int msm_snd_hw_params(struct snd_pcm_substream *substream,
 	u32 rx_ch_count;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-#ifndef CONFIG_SND_SOC_CS47L35
+#ifndef CONFIG_SND_SOC_MADERA
 		ret = snd_soc_dai_get_channel_map(codec_dai,
 					&tx_ch_cnt, tx_ch, &rx_ch_cnt, rx_ch);
 		if (ret < 0) {
@@ -996,7 +999,7 @@ int msm_snd_hw_params(struct snd_pcm_substream *substream,
 				  slim_rx_cfg[0].channels);
 			rx_ch_count = slim_rx_cfg[0].channels;
 		}
-#ifndef CONFIG_SND_SOC_CS47L35
+#ifndef CONFIG_SND_SOC_MADERA
 		ret = snd_soc_dai_set_channel_map(cpu_dai, 0, 0,
 						  rx_ch_count, rx_ch);
 #else
@@ -1018,7 +1021,7 @@ int msm_snd_hw_params(struct snd_pcm_substream *substream,
 	} else {
 		pr_debug("%s: %s_tx_dai_id_%d_ch=%d\n", __func__,
 			 codec_dai->name, codec_dai->id, user_set_tx_ch);
-#ifndef CONFIG_SND_SOC_CS47L35
+#ifndef CONFIG_SND_SOC_MADERA
 		ret = snd_soc_dai_get_channel_map(codec_dai,
 					 &tx_ch_cnt, tx_ch, &rx_ch_cnt, rx_ch);
 		if (ret < 0) {
@@ -1036,7 +1039,7 @@ int msm_snd_hw_params(struct snd_pcm_substream *substream,
 		else if (dai_link->id == MSM_BACKEND_DAI_SLIMBUS_4_TX)
 			user_set_tx_ch = msm_vi_feed_tx_ch;
 		else
-#ifndef CONFIG_SND_SOC_CS47L35
+#ifndef CONFIG_SND_SOC_MADERA
 			user_set_tx_ch = tx_ch_cnt;
 #else
 			user_set_tx_ch = 1;
@@ -1046,7 +1049,7 @@ int msm_snd_hw_params(struct snd_pcm_substream *substream,
 			 __func__,  slim_tx_cfg[0].channels, user_set_tx_ch,
 			 tx_ch_cnt, dai_link->id);
 
-#ifndef CONFIG_SND_SOC_CS47L35
+#ifndef CONFIG_SND_SOC_MADERA
 		ret = snd_soc_dai_set_channel_map(cpu_dai,
 						  user_set_tx_ch, tx_ch, 0, 0);
 #else
@@ -1430,6 +1433,7 @@ static struct notifier_block service_nb = {
 	.priority = -INT_MAX,
 };
 
+#ifndef CONFIG_SND_SOC_MADERA
 static int msm_config_hph_en0_gpio(struct snd_soc_component *component,
 					bool high)
 {
@@ -1484,6 +1488,7 @@ static int msm_ext_mclk_tx_event(struct snd_soc_dapm_widget *w,
 	}
 	return 0;
 }
+#endif
 
 static int msm_ext_mclk_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
@@ -1523,6 +1528,7 @@ static int msm_ext_mclk_event(struct snd_soc_dapm_widget *w,
 	return 0;
 }
 
+#ifndef CONFIG_SND_SOC_MADERA
 static int msm_ext_prepare_hifi(struct msm_asoc_mach_data *pdata)
 {
 	int ret = 0;
@@ -1950,6 +1956,12 @@ done:
 err_afe_cfg:
 	return ret;
 }
+#else
+int msm_audrx_init(struct snd_soc_pcm_runtime *rtd)
+{
+	return 0;
+}
+#endif
 EXPORT_SYMBOL(msm_audrx_init);
 
 static struct snd_soc_dapm_route cs47l35_audio_paths[] = {
@@ -1961,6 +1973,12 @@ static struct snd_soc_dapm_route cs47l35_audio_paths[] = {
 	{"AIF1 Playback", NULL, "AMP Capture"},
 	{"AMP Playback", NULL, "OPCLK"},
 	{"AMP Capture", NULL, "OPCLK"},
+};
+
+static const struct snd_soc_dapm_widget msm_madera_dapm_widgets[] = {
+	SND_SOC_DAPM_SUPPLY_S("MCLK", -1, SND_SOC_NOPM, 0, 0,
+		msm_ext_mclk_event, SND_SOC_DAPM_PRE_PMU |
+		SND_SOC_DAPM_POST_PMD),
 };
 
 int msm_cs47l35_init(struct snd_soc_pcm_runtime *rtd)
@@ -2033,8 +2051,8 @@ int msm_cs47l35_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_dapm_new_controls(dapm, msm_dapm_widgets,
-			ARRAY_SIZE(msm_dapm_widgets));
+	ret = snd_soc_dapm_new_controls(dapm, msm_madera_dapm_widgets,
+			ARRAY_SIZE(msm_madera_dapm_widgets));
 	if (ret != 0) {
 		dev_err(component->dev, "Failed to add dapm widgets %d\n", ret);
 		return ret;
@@ -2080,10 +2098,8 @@ int msm_cs47l35_init(struct snd_soc_pcm_runtime *rtd)
 	snd_soc_dapm_sync(dapm);
 
 	ret = msm_adsp_power_up_config(component, rtd->card->snd_card);
-	if (ret) {
+	if (ret)
 		pr_err("%s: Failed to set AFE config %d\n", __func__, ret);
-		goto err_afe_cfg;
-	}
 
 #ifdef CONFIG_SND_SOC_OPALUM
 	ret = ospl2xx_init(rtd);
@@ -2093,8 +2109,6 @@ int msm_cs47l35_init(struct snd_soc_pcm_runtime *rtd)
 	codec_reg_done = true;
 	return 0;
 
-err_afe_cfg:
-	return ret;
 }
 EXPORT_SYMBOL(msm_cs47l35_init);
 
@@ -2132,12 +2146,14 @@ int msm_ext_cdc_init(struct platform_device *pdev,
 {
 	int ret = 0;
 
-	wcd_mbhc_cfg_ptr = wcd_mbhc_cfg_ptr1;
 	pdev->id = 0;
+#ifndef CONFIG_SND_SOC_MADERA
+	wcd_mbhc_cfg_ptr = wcd_mbhc_cfg_ptr1;
 	wcd_mbhc_cfg_ptr->moisture_en = true;
 	wcd_mbhc_cfg_ptr->mbhc_micbias = MIC_BIAS_2;
 	wcd_mbhc_cfg_ptr->anc_micbias = MIC_BIAS_2;
 	wcd_mbhc_cfg_ptr->enable_anc_mic_detect = false;
+#endif
 
 	*card = populate_snd_card_dailinks(&pdev->dev, pdata->snd_card_val);
 	if (!(*card)) {
@@ -2147,6 +2163,7 @@ int msm_ext_cdc_init(struct platform_device *pdev,
 	}
 	platform_set_drvdata(pdev, *card);
 	snd_soc_card_set_drvdata(*card, pdata);
+#ifndef CONFIG_SND_SOC_MADERA
 	pdata->hph_en1_gpio = of_get_named_gpio(pdev->dev.of_node,
 						"qcom,hph-en1-gpio", 0);
 	if (!gpio_is_valid(pdata->hph_en1_gpio))
@@ -2173,6 +2190,7 @@ int msm_ext_cdc_init(struct platform_device *pdev,
 			ret);
 		ret = 0;
 	}
+#endif
 	pdata->msm_snd_intr_lpi.mpm_wakeup =
 		ioremap(TLMM_CENTER_MPM_WAKEUP_INT_EN_0, 4);
 	pdata->msm_snd_intr_lpi.intr1_cfg_apps =
