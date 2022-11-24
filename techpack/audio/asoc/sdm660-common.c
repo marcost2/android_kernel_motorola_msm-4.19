@@ -385,9 +385,9 @@ static SOC_ENUM_SINGLE_EXT_DECL(tdm_rx_format, tdm_bit_format_text);
 static SOC_ENUM_SINGLE_EXT_DECL(tdm_rx_sample_rate, tdm_sample_rate_text);
 static SOC_ENUM_SINGLE_EXT_DECL(tdm_slot_num, tdm_slot_num_text);
 static SOC_ENUM_SINGLE_EXT_DECL(tdm_slot_width, tdm_slot_width_text);
-#ifndef CONFIG_SND_SOC
 static SOC_ENUM_SINGLE_EXT_DECL(qos_vote, qos_text);
 
+#ifndef CONFIG_SND_SOC_QCOM_TDM
 static int qos_vote_status;
 #endif
 
@@ -2914,7 +2914,6 @@ static int ext_disp_rx_sample_rate_put(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
-#ifdef CONFIG_SND_SOC_QCOM_TDM
 static int msm_qos_ctl_get(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
@@ -2966,7 +2965,6 @@ static int msm_qos_ctl_put(struct snd_kcontrol *kcontrol,
 
 	return 0;
 }
-#endif
 
 const struct snd_kcontrol_new msm_common_snd_controls[] = {
 	SOC_ENUM_EXT("PROXY_RX Channels", proxy_rx_chs,
@@ -3453,9 +3451,9 @@ const struct snd_kcontrol_new msm_common_snd_controls[] = {
 	SOC_SINGLE_MULTI_EXT("QUIN_TDM_TX_7 SlotMapping",
 		SND_SOC_NOPM, 0, 0xFFFF, 0, TDM_SLOT_OFFSET_MAX,
 		tdm_tx_slot_mapping_get, tdm_tx_slot_mapping_put),
+#endif
 	SOC_ENUM_EXT("MultiMedia5_RX QOS Vote", qos_vote, msm_qos_ctl_get,
 			msm_qos_ctl_put),
-#endif
 };
 
 /**
