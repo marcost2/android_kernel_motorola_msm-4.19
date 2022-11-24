@@ -377,28 +377,9 @@ int avcs_core_query_timer_offset(int64_t *av_offset, int32_t clock_id)
 }
 EXPORT_SYMBOL(avcs_core_query_timer_offset);
 
-#if IS_ENABLED(CONFIG_AVTIMER_LEGACY)
-static void avcs_set_isp_fptr(bool enable)
-{
-	struct avtimer_fptr_t av_fptr;
-
-	if (enable) {
-		av_fptr.fptr_avtimer_open = avcs_core_open;
-		av_fptr.fptr_avtimer_enable = avcs_core_disable_power_collapse;
-		av_fptr.fptr_avtimer_get_time = avcs_core_query_timer;
-		msm_isp_set_avtimer_fptr(av_fptr);
-	} else {
-		av_fptr.fptr_avtimer_open = NULL;
-		av_fptr.fptr_avtimer_enable = NULL;
-		av_fptr.fptr_avtimer_get_time = NULL;
-		msm_isp_set_avtimer_fptr(av_fptr);
-	}
-}
-#else
 static void avcs_set_isp_fptr(bool enable)
 {
 }
-#endif
 
 static int avtimer_open(struct inode *inode, struct file *file)
 {

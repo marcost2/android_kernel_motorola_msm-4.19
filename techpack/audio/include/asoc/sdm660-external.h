@@ -5,6 +5,8 @@
 
 #ifndef __SDM660_EXTERNAL
 #define __SDM660_EXTERNAL
+#define MCLK_RATE_12P288	12288000
+#define SCLK_RATE_1P536	1536000
 
 int msm_snd_hw_params(struct snd_pcm_substream *substream,
 		      struct snd_pcm_hw_params *params);

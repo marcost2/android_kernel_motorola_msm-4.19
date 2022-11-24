@@ -2007,14 +2007,6 @@ int msm_cs47l35_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_component_set_pll(component, MADERA_FLL1_SYNCCLK,
-			MADERA_FLL_SRC_MCLK2,
-			32768, CS47L35_SYSCLK_RATE);
-	if (ret != 0) {
-		dev_err(component->dev, "Failed to set FLL1REFCLK %d\n", ret);
-		return ret;
-	}
-
 	ret = snd_soc_component_set_sysclk(component, MADERA_CLK_SYSCLK_1,
 			MADERA_CLK_SRC_FLL1, CS47L35_SYSCLK_RATE,
 			SND_SOC_CLOCK_IN);

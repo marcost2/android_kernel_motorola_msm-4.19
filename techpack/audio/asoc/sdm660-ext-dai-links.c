@@ -324,30 +324,26 @@ static const struct snd_soc_pcm_stream cs35l35_params = {
 static int cs35l35_dai_init(struct snd_soc_pcm_runtime *rtd)
 {
 	int ret;
-	int codec_clock = CS35L35_MCLK_RATE;
+	int madera_sysclk = MADERA_CLK_SYSCLK_1;
 	struct snd_soc_component *component =
 		snd_soc_rtdcom_lookup(rtd, "cs47l90-codec");
 	struct snd_soc_dapm_context *dapm = snd_soc_component_get_dapm(component);
 	struct snd_soc_dai *aif1_dai = rtd->cpu_dai;
-	struct snd_soc_dai *cs35l35_dai = rtd->codec_dai;
+	struct snd_soc_dai *amp_dai = rtd->codec_dai;
 
-	ret = snd_soc_dai_set_sysclk(aif1_dai, MADERA_CLK_SYSCLK_1, 0, 0);
+	ret = snd_soc_dai_set_sysclk(aif1_dai, madera_sysclk, SCLK_RATE_1P536, 0);
 	if (ret != 0) {
 		dev_err(component->dev, "Failed to set SYSCLK %d\n", ret);
 		return ret;
 	}
-	ret = snd_soc_dai_set_sysclk(cs35l35_dai, 0, CS35L35_SCLK_RATE, 0);
+	ret = snd_soc_dai_set_sysclk(amp_dai, 0, SCLK_RATE_1P536, 0);
 	if (ret != 0) {
 		dev_err(component->dev, "Failed to set SCLK %d\n", ret);
 		return ret;
 	}
-#ifdef CONFIG_SND_SOC_CS35L36
-	codec_clock = CS35L35_SCLK_RATE;
-#endif
-	ret = snd_soc_component_set_sysclk(component, 0, 0, codec_clock, 0);
+	ret = snd_soc_component_set_sysclk(component, 0, 0, SCLK_RATE_1P536, 0);
 	if (ret != 0) {
 		dev_err(component->dev, "Failed to set MCLK %d\n", ret);
-		return ret;
 	}
 	snd_soc_dapm_ignore_suspend(dapm, "AMP Playback");
 	snd_soc_dapm_sync(dapm);
@@ -1635,33 +1631,6 @@ static struct snd_soc_dai_link msm_ext_common_be_dai[] = {
 		.ignore_suspend = 1,
 		.ignore_pmdown_time = 1,
 	},
-	/* Proxy Tx BACK END DAI Link */
-	{
-		.name = LPASS_BE_PROXY_TX,
-		.stream_name = "Proxy Capture",
-		.cpu_dai_name = "msm-dai-q6-dev.8195",
-		.platform_name = "msm-pcm-routing",
-		.codec_name = "msm-stub-codec.1",
-		.codec_dai_name = "msm-stub-tx",
-		.no_pcm = 1,
-		.dpcm_capture = 1,
-		.id = MSM_BACKEND_DAI_PROXY_TX,
-		.ignore_suspend = 1,
-	},
-	/* Proxy Rx BACK END DAI Link */
-	{
-		.name = LPASS_BE_PROXY_RX,
-		.stream_name = "Proxy Playback",
-		.cpu_dai_name = "msm-dai-q6-dev.8194",
-		.platform_name = "msm-pcm-routing",
-		.codec_name = "msm-stub-codec.1",
-		.codec_dai_name = "msm-stub-rx",
-		.no_pcm = 1,
-		.dpcm_playback = 1,
-		.id = MSM_BACKEND_DAI_PROXY_RX,
-		.ignore_pmdown_time = 1,
-		.ignore_suspend = 1,
-	},
 	{
 		.name = LPASS_BE_USB_AUDIO_RX,
 		.stream_name = "USB Audio Playback",
@@ -2219,8 +2188,7 @@ ARRAY_SIZE(msm_ext_madera_fe_dai) +
 ARRAY_SIZE(msm_ext_common_be_dai) +
 ARRAY_SIZE(msm_ext_madera_be_dai) +
 ARRAY_SIZE(msm_mi2s_be_dai_links) +
-ARRAY_SIZE(msm_auxpcm_be_dai_links) +
-ARRAY_SIZE(msm_wcn_be_dai_links)];
+ARRAY_SIZE(msm_auxpcm_be_dai_links)];
 
 static struct snd_soc_dai_link msm_ext_tasha_dai_links[
 ARRAY_SIZE(msm_ext_common_fe_dai) +
@@ -2304,14 +2272,6 @@ struct snd_soc_card *populate_snd_card_dailinks(struct device *dev,
 			       msm_auxpcm_be_dai_links,
 			       sizeof(msm_auxpcm_be_dai_links));
 			len4 += ARRAY_SIZE(msm_auxpcm_be_dai_links);
-		}
-		if (of_property_read_bool(dev->of_node, "qcom,wcn-btfm")) {
-			dev_dbg(dev, "%s(): WCN BTFM support present\n",
-					__func__);
-			memcpy(msm_ext_madera_dai_links + len4,
-				   msm_wcn_be_dai_links,
-				   sizeof(msm_wcn_be_dai_links));
-			len4 += ARRAY_SIZE(msm_wcn_be_dai_links);
 		}
 		msm_ext_dai_links = msm_ext_madera_dai_links;
 	} else if (strnstr(card->name, "tasha", strlen(card->name))) {

@@ -147,6 +147,7 @@ load_adsp:
 					__func__);
 				goto fail;
 			}
+			apr_set_q6_state(APR_SUBSYS_LOADED);
 		} else if (adsp_state == APR_SUBSYS_LOADED) {
 			dev_dbg(&pdev->dev,
 			"%s: ADSP state = %x\n", __func__, adsp_state);
