@@ -220,8 +220,11 @@ struct msm_wsa881x_dev_info {
 	struct device_node *of_node;
 	u32 index;
 };
+
+#ifndef CONFIG_SND_SOC_CS47L35
 static struct snd_soc_aux_dev *msm_aux_dev;
 static struct snd_soc_codec_conf *msm_codec_conf;
+#endif
 
 static bool msm_swap_gnd_mic(struct snd_soc_component *component, bool active);
 
@@ -5085,6 +5088,7 @@ err:
 	return ret;
 }
 
+#ifndef CONFIG_SND_SOC_CS47L35
 static int msm_wsa881x_init(struct snd_soc_component *component)
 {
 	u8 spkleft_ports[WSA881X_MAX_SWR_PORTS] = {100, 101, 102, 106};
@@ -5320,6 +5324,8 @@ err_dt:
 	return ret;
 }
 
+#endif
+
 static void i2s_auxpcm_init(struct platform_device *pdev)
 {
 	int count;
@@ -5397,15 +5403,16 @@ static int msm_asoc_machine_probe(struct platform_device *pdev)
 
 	ret = of_property_read_u32(pdev->dev.of_node, mclk, &id);
 	if (ret) {
-		dev_err(&pdev->dev,
-			"%s: missing %s in dt node\n", __func__, mclk);
 		id = DEFAULT_MCLK_RATE;
 	}
 	pdata->mclk_freq = id;
 
 	if (!strcmp(match->data, "tasha_codec") ||
-	    !strcmp(match->data, "tavil_codec")) {
-		if (!strcmp(match->data, "tasha_codec"))
+	    !strcmp(match->data, "tavil_codec") ||
+	    !strcmp(match->data, "madera_codec")) {
+		if (!strcmp(match->data, "madera_codec"))
+			pdata->snd_card_val = EXT_SND_CARD_MADERA;
+		else if (!strcmp(match->data, "tasha_codec"))
 			pdata->snd_card_val = EXT_SND_CARD_TASHA;
 		else
 			pdata->snd_card_val = EXT_SND_CARD_TAVIL;
@@ -5485,11 +5492,13 @@ static int msm_asoc_machine_probe(struct platform_device *pdev)
 		goto err;
 	}
 
+#ifndef CONFIG_SND_SOC_CS47L35
 	if (!of_property_read_bool(pdev->dev.of_node, "qcom,wsa-disable")) {
 		ret = msm_init_wsa_dev(pdev, card);
 		if (ret)
 			goto err;
 	}
+#endif
 
 	ret = devm_snd_soc_register_card(&pdev->dev, card);
 	if (ret == -EPROBE_DEFER) {

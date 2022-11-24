@@ -553,6 +553,9 @@ config SND_SOC_CS4349
 config SND_SOC_CS47L24
 	tristate
 
+config SND_SOC_CS47L35
+	tristate " for testing"
+
 config SND_SOC_CS47L90
 	tristate " Cirrus Logic CS47L90 Codec"
 
