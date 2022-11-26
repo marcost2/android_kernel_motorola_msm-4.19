@@ -9,6 +9,7 @@
 #include "dsi-panel-mot-tianma-601-1080p-cmd.dtsi"
 #include "../carrier-channel-ids.dtsi"
 #include "../moto-mem-reserve.h"
+#include "sdm660-beckham-audio.dtsi"
 
 / {
         model = "beckham";
@@ -225,6 +226,7 @@
 		/delete-property/ pinctrl-0;
 		/delete-property/ pinctrl-1;
 	};
+	/delete-node/sound-tavil;
 };
 
 &pm660_vadc {
