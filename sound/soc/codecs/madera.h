@@ -12,6 +12,7 @@
 #include <linux/completion.h>
 #include <sound/soc.h>
 #include <sound/madera-pdata.h>
+#include <linux/mfd/madera/core.h>
 
 #include "wm_adsp.h"
 

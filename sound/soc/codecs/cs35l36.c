@@ -165,8 +165,8 @@ static const struct snd_kcontrol_new cs35l36_aud_controls[] = {
 static int cs35l36_main_amp_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_codec *codec = snd_soc_dapm_to_codec(w->dapm);
-	struct cs35l36_private *cs35l36 = snd_soc_codec_get_drvdata(codec);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct cs35l36_private *cs35l36 = snd_soc_card_get_drvdata(component->card);
 	u32 reg;
 	int ret = 0;
 
@@ -202,7 +202,7 @@ static int cs35l36_main_amp_event(struct snd_soc_dapm_widget *w,
 		usleep_range(2000, 2100);
 		break;
 	default:
-		dev_dbg(codec->dev, "Invalid event = 0x%x\n", event);
+		dev_dbg(component->dev, "Invalid event = 0x%x\n", event);
 	}
 	return ret;
 }
@@ -210,8 +210,8 @@ static int cs35l36_main_amp_event(struct snd_soc_dapm_widget *w,
 static int cs35l36_boost_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_codec *codec = snd_soc_dapm_to_codec(w->dapm);
-	struct cs35l36_private *cs35l36 = snd_soc_codec_get_drvdata(codec);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct cs35l36_private *cs35l36 = snd_soc_card_get_drvdata(component->card);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -229,7 +229,7 @@ static int cs35l36_boost_event(struct snd_soc_dapm_widget *w,
 						CS35L36_BST_EN_SHIFT);
 		break;
 	default:
-		dev_dbg(codec->dev, "Invalid event = 0x%x\n", event);
+		dev_dbg(component->dev, "Invalid event = 0x%x\n", event);
 	}
 	return 0;
 }
@@ -428,7 +428,7 @@ static const struct snd_soc_dapm_route cs35l36_audio_map[] = {
 static int cs35l36_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
 	struct cs35l36_private *cs35l36 =
-			snd_soc_codec_get_drvdata(codec_dai->codec);
+			snd_soc_card_get_drvdata(codec_dai->component->card);
 	unsigned int asp_fmt, lrclk_fmt, sclk_fmt, slave_mode;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -507,11 +507,11 @@ static int cs35l36_get_clk_config(struct cs35l36_private *cs35l36, int freq)
 	return -EINVAL;
 }
 
-static int cs35l36_codec_set_sysclk(struct snd_soc_codec *codec,
+static int cs35l36_component_set_sysclk(struct snd_soc_component *component,
 				int clk_id, int source, unsigned int freq,
 				int dir)
 {
-	struct cs35l36_private *cs35l36 = snd_soc_codec_get_drvdata(codec);
+	struct cs35l36_private *cs35l36 = snd_soc_card_get_drvdata(component->card);
 	int ret;
 	cs35l36->extclk_freq = freq;
 
@@ -542,7 +542,7 @@ static int cs35l36_codec_set_sysclk(struct snd_soc_codec *codec,
 	ret = cs35l36_get_clk_config(cs35l36, freq);
 
 	if (ret < 0) {
-		dev_err(codec->dev,
+		dev_err(component->dev,
 			"Invalid CLK Config Freq: %d\n", freq);
 		return -EINVAL;
 	}
@@ -631,8 +631,8 @@ static int cs35l36_codec_set_sysclk(struct snd_soc_codec *codec,
 static int cs35l36_dai_set_sysclk(struct snd_soc_dai *dai,
 				int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_codec *codec = dai->codec;
-	struct cs35l36_private *cs35l36 = snd_soc_codec_get_drvdata(codec);
+	struct snd_soc_component *component = dai->component;
+	struct cs35l36_private *cs35l36 = snd_soc_card_get_drvdata(component->card);
 	int fs1_val = 0;
 	int fs2_val = 0;
 
@@ -691,8 +691,8 @@ static int cs35l36_pcm_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_codec *codec = dai->codec;
-	struct cs35l36_private *cs35l36 = snd_soc_codec_get_drvdata(codec);
+	struct snd_soc_component *component = dai->component;
+	struct cs35l36_private *cs35l36 = snd_soc_card_get_drvdata(component->card);
 	int i, ret = 0;
 	unsigned int global_fs = params_rate(params);
 	unsigned int asp_width;
@@ -705,7 +705,7 @@ static int cs35l36_pcm_hw_params(struct snd_pcm_substream *substream,
 			sclk_rate, cs35l36->sclk);
 		dev_dbg(cs35l36->dev, "rate %d width %d channels %d\n", params_rate(params),
 			params_width(params), params_channels(params));
-		ret = cs35l36_codec_set_sysclk(codec, CS35L36_PLLSRC_SCLK, 0,
+		ret = cs35l36_component_set_sysclk(component, CS35L36_PLLSRC_SCLK, 0,
 			sclk_rate, 0);
 		if (ret != 0) {
 			dev_err(cs35l36->dev, "Can't set codec sysclk %d\n", ret);
@@ -839,10 +839,10 @@ static int cs35l36_boost_inductor(struct cs35l36_private *cs35l36, int inductor)
 	return 0;
 }
 
-static int cs35l36_codec_probe(struct snd_soc_codec *codec)
+static int cs35l36_component_probe(struct snd_soc_component *component)
 {
-	struct cs35l36_private *cs35l36 = snd_soc_codec_get_drvdata(codec);
-	struct snd_soc_dapm_context *dapm = snd_soc_codec_get_dapm(codec);
+	struct cs35l36_private *cs35l36 = snd_soc_card_get_drvdata(component->card);
+	struct snd_soc_dapm_context *dapm = snd_soc_component_get_dapm(component);
 	int ret = 0;
 
 	if (cs35l36->pdata.sclk_frc)
@@ -1033,19 +1033,15 @@ static int cs35l36_codec_probe(struct snd_soc_codec *codec)
 	return 0;
 }
 
-static struct snd_soc_codec_driver soc_codec_dev_cs35l36 = {
-	.probe = &cs35l36_codec_probe,
-	.set_sysclk = cs35l36_codec_set_sysclk,
-	.component_driver = {
-		.dapm_widgets = cs35l36_dapm_widgets,
-		.num_dapm_widgets = ARRAY_SIZE(cs35l36_dapm_widgets),
-
-		.dapm_routes = cs35l36_audio_map,
-		.num_dapm_routes = ARRAY_SIZE(cs35l36_audio_map),
-		.controls = cs35l36_aud_controls,
-		.num_controls = ARRAY_SIZE(cs35l36_aud_controls),
-	},
-	.ignore_pmdown_time = true,
+static struct snd_soc_component_driver soc_component_dev_cs35l36 = {
+	.probe = &cs35l36_component_probe,
+	.set_sysclk = cs35l36_component_set_sysclk,
+	.dapm_widgets = cs35l36_dapm_widgets,
+	.num_dapm_widgets = ARRAY_SIZE(cs35l36_dapm_widgets),
+	.dapm_routes = cs35l36_audio_map,
+	.num_dapm_routes = ARRAY_SIZE(cs35l36_audio_map),
+	.controls = cs35l36_aud_controls,
+	.num_controls = ARRAY_SIZE(cs35l36_aud_controls),
 };
 
 static struct regmap_config cs35l36_regmap = {
@@ -1696,10 +1692,10 @@ static int cs35l36_i2c_probe(struct i2c_client *i2c_client,
 			"Cirrus Logic CS35L%d, Revision: %02X\n",
 			cs35l36->chip_version, reg_revid >> 8);
 
-	ret =  snd_soc_register_codec(dev, &soc_codec_dev_cs35l36, cs35l36_dai,
+	ret =  snd_soc_register_component(dev, &soc_component_dev_cs35l36, cs35l36_dai,
 					ARRAY_SIZE(cs35l36_dai));
 	if (ret < 0) {
-		dev_err(dev, "%s: Register codec failed %d\n", __func__, ret);
+		dev_err(dev, "%s: Register component failed %d\n", __func__, ret);
 		goto err;
 	}
 
@@ -1726,7 +1722,7 @@ static int cs35l36_i2c_remove(struct i2c_client *client)
 
 	regulator_bulk_disable(cs35l36->num_supplies, cs35l36->supplies);
 
-	snd_soc_unregister_codec(&client->dev);
+	snd_soc_unregister_component(&client->dev);
 
 	return 0;
 }
