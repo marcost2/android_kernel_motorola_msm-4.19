@@ -192,12 +192,16 @@
 				"msm-dai-q6-tdm.36912", "msm-dai-q6-tdm.36913",
 				"msm-dai-q6-dev.8194", "msm-dai-q6-dev.8195";
 		qcom,audio-routing =
-			"IN2AL", "MICBIAS2A",
-			"IN1AL", "MICBIAS2B",
-			"IN2R",  "MICBIAS2C",
-			"IN1AR", "MICBIAS2D",
-			"IN1BR", "MICBIAS1A",
-			"IN1BR", "MICBIAS1B";
+			"IN2ALN", "MICBIAS2A",
+			"IN2ALP", "MICBIAS2A",
+			"IN1ALN", "MICBIAS2B",
+			"IN1ALP", "MICBIAS2B",
+			"IN2RN",  "MICBIAS2C",
+			"IN2RP",  "MICBIAS2C",
+			"IN1ARN", "MICBIAS2D",
+			"IN1ARP", "MICBIAS2D",
+			"IN1BRN", "MICBIAS1A",
+			"IN1BRP", "MICBIAS1B";
 	};
 
 	mods_codec_shim {
@@ -343,7 +347,6 @@
 
 					gpio1 {
 						groups = "gpio1";
-						function = "gpio1";
 						bias-bus-hold;
 						input-debounce = <1>;
 						drive-strength = <8>;
@@ -352,7 +355,6 @@
 
 					gpio2 {
 						groups = "gpio2";
-						function = "gpio2";
 						bias-bus-hold;
 						input-debounce = <1>;
 						drive-strength = <8>;
@@ -367,14 +369,12 @@
 
 					gpio37 {
 						groups = "gpio37";
-						function = "gpio37";
 						output-high;
 						bias-disable;
 					};
 
 					gpio38 {
 						groups = "gpio38";
-						function = "gpio38";
 						output-high;
 						bias-disable;
 					};
