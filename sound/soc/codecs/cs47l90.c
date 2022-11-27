@@ -2286,6 +2286,7 @@ static struct snd_soc_dai_driver cs47l90_dai[] = {
 		.symmetric_rates = 1,
 		.symmetric_samplebits = 1,
 	},
+/* slim1 id should be 4
 	{
 		.name = "cs47l90-aif4",
 		.id = 4,
@@ -2308,9 +2309,10 @@ static struct snd_soc_dai_driver cs47l90_dai[] = {
 		.symmetric_rates = 1,
 		.symmetric_samplebits = 1,
 	},
+*/
 	{
 		.name = "cs47l90-slim1",
-		.id = 5,
+		.id = 4,
 		.playback = {
 			.stream_name = "Slim1 Playback",
 			.channels_min = 1,
@@ -2325,11 +2327,11 @@ static struct snd_soc_dai_driver cs47l90_dai[] = {
 			.rates = MADERA_RATES,
 			.formats = MADERA_FORMATS,
 		 },
-		.ops = &madera_simple_dai_ops,
+		.ops = &madera_slim_dai_ops,
 	},
 	{
 		.name = "cs47l90-slim2",
-		.id = 6,
+		.id = 5,
 		.playback = {
 			.stream_name = "Slim2 Playback",
 			.channels_min = 1,
@@ -2344,7 +2346,7 @@ static struct snd_soc_dai_driver cs47l90_dai[] = {
 			.rates = MADERA_RATES,
 			.formats = MADERA_FORMATS,
 		 },
-		.ops = &madera_simple_dai_ops,
+		.ops = &madera_slim_dai_ops,
 	},
 	{
 		.name = "cs47l90-slim3",
